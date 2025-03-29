@@ -142,7 +142,7 @@ void starupMin() {
 
   if(input == 'y' || input == 'Y'){
     continue = true;
-    Bluetooth.wire("Starting H-driver min routine. \n");
+    Bluetooth.write("Starting H-driver min routine. \n");
   }
 
   while(continue){
@@ -156,7 +156,7 @@ void starupMin() {
 
     if(input != 'y' && input != 'Y'){
       continue = false;
-      Bluetooth.wire("Ending H-driver min routine \n");
+      Bluetooth.write("Ending H-driver min routine \n");
     }
   }
 }
