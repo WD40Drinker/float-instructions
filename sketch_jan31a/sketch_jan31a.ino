@@ -27,13 +27,13 @@ String message = "Dive completed successfully";
 void setup() {
 // put your setup code here, to run once:
 
-serial.begin(9600);
-Serial.println("Starting");
-Wire.begin();
-sensor.setModel(MS5837::MS5837_30BA);
-sensor.setFluidDensity(997);
+  serial.begin(9600);
+  Serial.println("Starting");
+  Wire.begin();
+  sensor.setModel(MS5837::MS5837_30BA);
+  sensor.setFluidDensity(997);
 
-Serial.println("HC-05 AT Commands:");
+  Serial.println("HC-05 AT Commands:");
   Serial.println("Function            	| Command       	| Response     	   | Parameter");
   Serial.println("Test                	| AT            	| OK           	   | None");
   Serial.println("Check Master/Slave  	| AT+CMODE?     	| +CMOD:<cmod> 	   | 0 (Default)");
@@ -43,9 +43,9 @@ Serial.println("HC-05 AT Commands:");
   Serial.println("Reset Device        	| AT+RESET      	| OK           	   | None");
   Bluetooth.begin(38400); //HC-05 default speed in AT command mode
 
-Bluetooth.begin(38400); //HC-05 default speed in AT command mode
+  Bluetooth.begin(38400); //HC-05 default speed in AT command mode
 
-pinMode(enA, OUTPUT);
+  pinMode(enA, OUTPUT);
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
   // Turn off motors - Initial state
@@ -53,12 +53,7 @@ pinMode(enA, OUTPUT);
   digitalWrite(in2, LOW);
 
   // min our the H-driver
-  for(int i = 0; i < stepmax; i++){
-      actuateBackward();
-      delay(increment);
-      coastStop();
-      delay(1000);
-  }
+  startupMin();
   step = 0; // never hurts to be redundant
 
 }
@@ -70,16 +65,17 @@ void loop() {
     toDepth = stoi(Bluetooth.read); //I don't remember do I have to typecast this? 
     serial.println("float is going to" + toDepth);
 
-    while(toDepth > sensor.depth()){
+    while(toDepth > depth){
       //increment down with the actuator
       delay(2500); // delay to upload new instructions  idk if I really need this 
       actuateForward();
       delay(increment);
       coastStop();
       delay(1000); //give the sensor time to update its depth 
+      depth = sensor.depth();
 	    if(step >= stepMax){
 		    message = "Cannot go to depth: " + toDepth;
-		    Break;
+		    break;
 	    }
     }
     //idk how to program adjustments when the float overshoots
@@ -94,7 +90,7 @@ void loop() {
     delay(5000); // lets pause just because
     //empty the valve (min out the H-driver)
     Bluetooth.write("float is surfacing");
-      for(int i = 0; i < stepmax; i++){
+    for(int i = 0; i < step; i++){
       actuateBackward();
       delay(increment);
       coastStop();
@@ -103,7 +99,7 @@ void loop() {
     step = 0; // never hurts to be redundant
 
     //send the saved info
-    Bluetooth.write(message); // send info back to the other arduino 
+    Bluetooth.write(message + "\n"); // send info back to the other arduino 
     Bluetooth.write("The Temperature is " + temp + " deg C \n" + 
     "The Depth is " + depth + " m \n" + 
     "The Pressure is " + pressure + 
@@ -137,4 +133,33 @@ void brakeStop() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, HIGH);
 }
+
+void starupMin() {
+  bool continue = false;
+
+  Bluetooth.write("Would you like to min out the H-driver Y/N \n");
+  char input = (Bluetooth.read)[0];
+
+  if(input == 'y' || input == 'Y'){
+    continue = true;
+    Bluetooth.wire("Starting H-driver min routine. \n");
+  }
+
+  while(continue){
+    actuateBackward();
+    delay(increment);
+    coastStop();
+    delay(1000);
+        
+    Bluetooth.write("Would you like to continue? Y/N \n");
+    input = (Bluetooth.read)[0];
+
+    if(input != 'y' && input != 'Y'){
+      continue = false;
+      Bluetooth.wire("Ending H-driver min routine \n");
+    }
+  }
+}
+
+
 
