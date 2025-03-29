@@ -90,7 +90,7 @@ void loop() {
     delay(5000); // lets pause just because
     //empty the valve (min out the H-driver)
     Bluetooth.write("float is surfacing");
-      for(int i = 0; i < stepmax; i++){
+    for(int i = 0; i < step; i++){
       actuateBackward();
       delay(increment);
       coastStop();
