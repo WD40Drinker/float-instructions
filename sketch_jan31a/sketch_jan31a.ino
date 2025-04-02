@@ -63,7 +63,7 @@ void loop() {
 	  message = "Dive completed successfully";
     //do stuff to sink the float
     toDepth = stoi(Bluetooth.read); //I don't remember do I have to typecast this? 
-    serial.println("float is going to" + toDepth);
+    Bluetooth.write("float is going to" + toDepth);
 
     while(toDepth > depth){
       //increment down with the actuator
