@@ -63,15 +63,16 @@ void loop() {
 	  message = "Dive completed successfully";
     //do stuff to sink the float
     toDepth = stoi(Bluetooth.read); //I don't remember do I have to typecast this? 
-    serial.println("float is going to" + toDepth);
+    Bluetooth.write("float is going to" + toDepth);
 
     while(toDepth > depth){
       //increment down with the actuator
-      delay(2500); // delay to upload new instructions  idk if I really need this 
+      delay(1000); // delay to upload new instructions  idk if I really need this 
       actuateForward();
       delay(increment);
       coastStop();
       delay(1000); //give the sensor time to update its depth 
+      communicateData();
       depth = sensor.depth();
 	    if(step >= stepMax){
 		    message = "Cannot go to depth: " + toDepth;
@@ -81,12 +82,6 @@ void loop() {
     //idk how to program adjustments when the float overshoots
     //This is the depth. Fuck you :)
 
-    delay(5000); // lets pause just because
-    //save info from the float
-    temp == sensor.temperature();
-    depth == sensor.depth();
-    pressure == sensor.pressure();
-    altitude == sensor.altitude();
     delay(5000); // lets pause just because
     //empty the valve (min out the H-driver)
     Bluetooth.write("float is surfacing");
@@ -100,17 +95,24 @@ void loop() {
 
     //send the saved info
     Bluetooth.write(message + "\n"); // send info back to the other arduino 
-    Bluetooth.write("The Temperature is " + temp + " deg C \n" + 
-    "The Depth is " + depth + " m \n" + 
-    "The Pressure is " + pressure + 
-    " mbar \n" + "The Altitiude is" 
-    + altitude + "m above mean sea level ");
+    communicateData();
   }
 
 }
+void communicateData() {
+  temp == sensor.temperature();
+  depth == sensor.depth();
+  pressure == sensor.pressure();
+  altitude == sensor.altitude();
+  Bluetooth.write("The Temperature is " + temp + " deg C \n" + 
+  "The Depth is " + depth + " m \n" + 
+  "The Pressure is " + pressure + " mbar \n" + 
+  "The Altitiude is" + altitude + "m above mean sea level \n");
+}
+
 
 // declare H-driver functions
-void actuateForward() {
+  void actuateForward() {
   analogWrite(enA, 255);
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -142,7 +144,7 @@ void starupMin() {
 
   if(input == 'y' || input == 'Y'){
     continue = true;
-    Bluetooth.wire("Starting H-driver min routine. \n");
+    Bluetooth.write("Starting H-driver min routine. \n");
   }
 
   while(continue){
@@ -156,7 +158,7 @@ void starupMin() {
 
     if(input != 'y' && input != 'Y'){
       continue = false;
-      Bluetooth.wire("Ending H-driver min routine \n");
+      Bluetooth.write("Ending H-driver min routine \n");
     }
   }
 }
