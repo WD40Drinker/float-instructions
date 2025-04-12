@@ -104,10 +104,11 @@ void communicateData() {
   depth == sensor.depth();
   pressure == sensor.pressure();
   altitude == sensor.altitude();
-  Bluetooth.write("The Temperature is " + temp + " deg C \n" + 
-  "The Depth is " + depth + " m \n" + 
-  "The Pressure is " + pressure + " mbar \n" + 
-  "The Altitiude is" + altitude + "m above mean sea level \n");
+  Bluetooth.write("The Temperature is " + temp + " deg C " + 
+  "The Depth is " + depth + "m " + 
+  "The Pressure is " + pressure + "mbar " + 
+  "The Altitiude is " + altitude + "m above mean sea level "
+  + "at time " + millis() + "\n");
 }
 
 
