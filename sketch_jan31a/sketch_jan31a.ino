@@ -5,6 +5,8 @@
 SoftwareSerial Bluetooth(3,2);
 
 // declare sensor variables
+String readDepth = String("");
+long time;
 int toDepth;
 int temp;
 int depth;
@@ -22,12 +24,12 @@ int step = 0; // This will be our actuator position tracking variables.  step is
 int stepMax = 10;  // and stepMax will be our limit
 int increment = 5000; // this will be time our functions actuateForware() and actualteBackward() will run for
 
-String message = "Dive completed successfully";
+String message = String("Dive completed successfully");
 
 void setup() {
 // put your setup code here, to run once:
 
-  serial.begin(9600);
+  Serial.begin(9600);
   Serial.println("Starting");
   Wire.begin();
   sensor.setModel(MS5837::MS5837_30BA);
@@ -62,7 +64,8 @@ void loop() {
   if(Bluetooth.available()){
 	  message = "Dive completed successfully";
     //do stuff to sink the float
-    toDepth = stoi(Bluetooth.read); //I don't remember do I have to typecast this? 
+    readDepth = String(Bluetooth.read()); //I don't remember do I have to typecast this? 
+    toDepth = readDepth.toInt();
     Bluetooth.write("float is going to" + toDepth);
 
     while(toDepth > depth){
@@ -94,20 +97,27 @@ void loop() {
     step = 0; // never hurts to be redundant
 
     //send the saved info
-    Bluetooth.write(message + "\n"); // send info back to the other arduino 
+    Bluetooth.write(&message); // send info back to the other arduino 
     communicateData();
   }
 
 }
 void communicateData() {
-  temp == sensor.temperature();
-  depth == sensor.depth();
-  pressure == sensor.pressure();
-  altitude == sensor.altitude();
-  Bluetooth.write("The Temperature is " + temp + " deg C \n" + 
-  "The Depth is " + depth + " m \n" + 
-  "The Pressure is " + pressure + " mbar \n" + 
-  "The Altitiude is" + altitude + "m above mean sea level \n");
+  temp = sensor.temperature();
+  depth = sensor.depth();
+  pressure = sensor.pressure();
+  altitude = sensor.altitude();
+  String Stringtemp = String(temp);
+  String Stringdepth = String(depth);
+  String Stringpressure = String(pressure);
+  String Stringaltitiude = String(altitude);
+  time = millis();
+  String Stringtime = String(time);
+  Bluetooth.write("The Temperature is " + Stringtemp + " deg C " + 
+  "The Depth is " + Stringdepth + "m " + 
+  "The Pressure is " + Stringpressure + "mbar " + 
+  "The Altitiude is " + Stringaltitude + "m above mean sea level "
+  + "at time " + Stringtime + "\n");
 }
 
 
@@ -136,28 +146,28 @@ void brakeStop() {
   digitalWrite(in2, HIGH);
 }
 
-void starupMin() {
-  bool continue = false;
+void startupMin() {
+  bool cont = false;
 
   Bluetooth.write("Would you like to min out the H-driver Y/N \n");
-  char input = (Bluetooth.read)[0];
+  char input = String((Bluetooth.read))[0];
 
   if(input == 'y' || input == 'Y'){
-    continue = true;
+    cont = true;
     Bluetooth.write("Starting H-driver min routine. \n");
   }
 
-  while(continue){
+  while(cont==false){
     actuateBackward();
     delay(increment);
     coastStop();
     delay(1000);
         
     Bluetooth.write("Would you like to continue? Y/N \n");
-    input = (Bluetooth.read)[0];
+    input = String((Bluetooth.read))[0];
 
     if(input != 'y' && input != 'Y'){
-      continue = false;
+      cont = false;
       Bluetooth.write("Ending H-driver min routine \n");
     }
   }
