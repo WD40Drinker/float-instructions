@@ -28,22 +28,11 @@ String message = String("Dive completed successfully");
 
 void setup() {
 // put your setup code here, to run once:
-
-  Serial.begin(9600);
+  Serial.begin(38400);
   Serial.println("Starting");
   Wire.begin();
   sensor.setModel(MS5837::MS5837_30BA);
   sensor.setFluidDensity(997);
-
-  Serial.println("HC-05 AT Commands:");
-  Serial.println("Function            	| Command       	| Response     	   | Parameter");
-  Serial.println("Test                	| AT            	| OK           	   | None");
-  Serial.println("Check Master/Slave  	| AT+CMODE?     	| +CMOD:<cmod> 	   | 0 (Default)");
-  Serial.println("Set Master/Slave mode | AT+CMODE=<cmode>      | OK           	   | 0 (slave) OR 1 (master))");
-  Serial.println("Get Address         	| AT+ADDR?      	| +ADDR:<addr>, OK | None");
-  Serial.println("Connect to Address  	| AT+BIND=<addr>	| OK           	   | Replace ':' with ','");
-  Serial.println("Reset Device        	| AT+RESET      	| OK           	   | None");
-  Bluetooth.begin(38400); //HC-05 default speed in AT command mode
 
   Bluetooth.begin(38400); //HC-05 default speed in AT command mode
 
@@ -55,18 +44,25 @@ void setup() {
   digitalWrite(in2, LOW);
 
   // min our the H-driver
-  startupMin();
+  forceMin();
   step = 0; // never hurts to be redundant
-
 }
 
 void loop() {
   if(Bluetooth.available()){
+    Serial.println("Bluetooth Connected");
+    String verify = String(Bluetooth.read());
+    Serial.println(verify);
+    Bluetooth.write("can you hear me?");
+    //Serial.print("Sensor Data");
+    //communicateData();
+  }
 	  message = "Dive completed successfully";
     //do stuff to sink the float
     readDepth = String(Bluetooth.read()); //I don't remember do I have to typecast this? 
     toDepth = readDepth.toInt();
     Bluetooth.write("float is going to" + toDepth);
+    Serial.println("Starting Dive");
 
     while(toDepth > depth){
       //increment down with the actuator
@@ -99,27 +95,24 @@ void loop() {
     //send the saved info
     Bluetooth.write(&message); // send info back to the other arduino 
     communicateData();
-  }
 
 }
+
 void communicateData() {
   temp = sensor.temperature();
   depth = sensor.depth();
   pressure = sensor.pressure();
   altitude = sensor.altitude();
-  String Stringtemp = String(temp);
-  String Stringdepth = String(depth);
-  String Stringpressure = String(pressure);
-  String Stringaltitiude = String(altitude);
   time = millis();
   String Stringtime = String(time);
-  Bluetooth.write("The Temperature is " + Stringtemp + " deg C " + 
-  "The Depth is " + Stringdepth + "m " + 
-  "The Pressure is " + Stringpressure + "mbar " + 
-  "The Altitiude is " + Stringaltitude + "m above mean sea level "
-  + "at time " + Stringtime + "\n");
-}
+  Bluetooth.write(&String(time));
+  Bluetooth.write(&String(temp));
+  Bluetooth.write(&String(depth));
+  Bluetooth.write(&String(pressure));
+  Bluetooth.write(&String(altitude));
 
+
+}
 
 // declare H-driver functions
   void actuateForward() {
@@ -146,30 +139,13 @@ void brakeStop() {
   digitalWrite(in2, HIGH);
 }
 
-void startupMin() {
-  bool cont = false;
+void forceMin() {
 
-  Bluetooth.write("Would you like to min out the H-driver Y/N \n");
-  String input = String((Bluetooth.read));
+  for(int i = 0; i < stepMax; i++){
 
-  if(input == "y" || input == "Y"){
-    cont = true;
-    Bluetooth.write("Starting H-driver min routine. \n");
-  }
-
-  while(cont==true){
     actuateBackward();
     delay(increment);
     coastStop();
-    delay(1000);
-        
-    Bluetooth.write("Would you like to continue? Y/N \n");
-    input = String((Bluetooth.read));
-
-    if(input != "y" && input != "Y"){
-      cont = false;
-      Bluetooth.write("Ending H-driver min routine \n");
-    }
   }
 }
 
