@@ -145,23 +145,23 @@ void startupMin() {
   bool cont = false;
 
   Bluetooth.write("Would you like to min out the H-driver Y/N \n");
-  char input = String((Bluetooth.read))[0];
+  String input = String((Bluetooth.read));
 
-  if(input == 'y' || input == 'Y'){
+  if(input == "y" || input == "Y"){
     cont = true;
     Bluetooth.write("Starting H-driver min routine. \n");
   }
 
-  while(cont==false){
+  while(cont==true){
     actuateBackward();
     delay(increment);
     coastStop();
     delay(1000);
         
     Bluetooth.write("Would you like to continue? Y/N \n");
-    input = String((Bluetooth.read))[0];
+    input = String((Bluetooth.read));
 
-    if(input != 'y' && input != 'Y'){
+    if(input != "y" && input != "Y"){
       cont = false;
       Bluetooth.write("Ending H-driver min routine \n");
     }
