@@ -5,15 +5,15 @@
 SoftwareSerial Bluetooth(3,2);
 
 // declare sensor variables
-String readDepth = String("");
+String readDepth = "";
 long time;
 int toDepth;
-int temp;
-int depth;
-int pressure;
-int altitude;
+float temp;
+float depth;
+float pressure;
+float altitude;
+String incomingMessage = "";
 MS5837 sensor;
-
 // declare H-driver variables
 int enA = 11;
 int in1 = 10;
@@ -51,12 +51,51 @@ void setup() {
 void loop() {
   if(Bluetooth.available()){
     Serial.println("Bluetooth Connected");
-    String verify = String(Bluetooth.read());
-    Serial.println(verify);
     Bluetooth.write("can you hear me?");
-    //Serial.print("Sensor Data");
-    //communicateData();
-  }
+    Bluetooth.write("enter \"101\" to verify and start dive");
+
+    bool verification = true;
+    while(verification){
+      //timeNow = millis();
+      while (Bluetooth.available()) {
+      char c = Bluetooth.read();
+      incomingMessage += c;
+      // If we see a newline or carriage return, process the message
+      if (c == '\n') {
+        incomingMessage.trim();  // Remove whitespace/newline
+        Serial.println("Received: " + incomingMessage);
+        if (incomingMessage == "101") {
+          Serial.println("Bluetooth Signal Validated");
+          Bluetooth.println("000");
+          communicateData();
+          verification = false;  // Exit loop
+        }
+        incomingMessage = "";  // Reset message buffer
+        }
+      }
+    }
+
+    bool waitForInput = true;
+    while(waitForInput){
+      //timeNow = millis();
+      while (Bluetooth.available()) {
+      char c = Bluetooth.read();
+      if(isDigit(c)){
+        incomingMessage += c;
+      }
+      // If we see a newline or carriage return, process the message
+        if (c == '\n') {
+          incomingMessage.trim();  // Remove whitespace/newline
+          Serial.println("Received: " + incomingMessage);
+          readDepth = incomingMessage; //This exist for any bullshit typing rules arduino may have idk;
+          toDepth = readDepth.toInt(); //convert input to integer;
+          waitForInput = false;
+          incomingMessage = "";  // Reset message buffer
+        }
+      }
+    }
+
+    Bluetooth.println("Starting Dive: ");
 	  message = "Dive completed successfully";
     //do stuff to sink the float
     readDepth = String(Bluetooth.read()); //I don't remember do I have to typecast this? 
@@ -95,7 +134,7 @@ void loop() {
     //send the saved info
     Bluetooth.write(&message); // send info back to the other arduino 
     communicateData();
-
+  }
 }
 
 void communicateData() {
@@ -140,7 +179,6 @@ void brakeStop() {
 }
 
 void forceMin() {
-
   for(int i = 0; i < stepMax; i++){
 
     actuateBackward();
