@@ -144,11 +144,11 @@ void communicateData() {
   altitude = sensor.altitude();
   time = millis();
   String Stringtime = String(time);
-  Bluetooth.write(&String(time));
-  Bluetooth.write(&String(temp));
-  Bluetooth.write(&String(depth));
-  Bluetooth.write(&String(pressure));
-  Bluetooth.write(&String(altitude));
+  Bluetooth.write(time);
+  Bluetooth.write(temp);
+  Bluetooth.write(depth);
+  Bluetooth.write(pressure);
+  Bluetooth.write(altitude);
 
 
 }
