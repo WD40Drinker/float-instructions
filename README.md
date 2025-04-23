@@ -2,4 +2,3 @@
 ## This is the repo for the code for the mini-float competition
 The final code for the sub should be named "float_side"
 The code for the bluetooth controller should be named "bluetooth_code"
-A test program to find steps depending on an increment should be named "step_finder"
