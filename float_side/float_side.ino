@@ -51,7 +51,7 @@ void setup() {
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
   pinMode(ENB, OUTPUT);
-  digitalWrite(IN4,HIGH);
+  digitalWrite(IN4,LOW);
   analogWrite(ENB,255);
   delay(8000);
   stopMotor();
@@ -128,8 +128,8 @@ void loop() {
     }
     //idk how to program adjustments when the float overshoots
     //This is the depth. Fuck you :)
-
-    //delay(5000); // lets pause just because
+    startMovement(neutral);
+    delay(1000);
 
     //make the float surface 
     Bluetooth.write("float is surfacing");
@@ -142,8 +142,6 @@ void loop() {
 
     //send the saved info
     Bluetooth.write("Dive completed successfully");
-
-    startMovement(neutral + 20);
     dataDump();
 
     forceMid();
@@ -176,10 +174,10 @@ void saveData() {
 }
 
 void dataDump(){
-  Bluetooth.write("time | temp | depth | pressure | altitiude");
+  Bluetooth.write("time (s) | temp | depth | pressure | altitiude");
   for(int i = 0; i < 50; i++){
     if(collectedData[i].time != -1){
-      Bluetooth.write(collectedData[i].time);
+      Bluetooth.write(collectedData[i].time/1000);
       Bluetooth.write(collectedData[i].temp);
       Bluetooth.write(collectedData[i].depth);
       Bluetooth.write(collectedData[i].pressure);
