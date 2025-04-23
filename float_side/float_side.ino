@@ -119,7 +119,7 @@ void loop() {
     Bluetooth.write("float is going to" + toDepth);
     Serial.println("Starting Dive (for real this time)");
 
-    startMovement(70); // make the float sink by making it heavier
+    startMovement(neutral - 20); // make the float sink by making it heavier
 
     while(toDepth > depth){ // IMPORTANT: CHECK THIS: WILL TYPES BE A PROBLEM?
       delay(5000); //give the sensor time to update its depth 
@@ -133,7 +133,7 @@ void loop() {
 
     //make the float surface 
     Bluetooth.write("float is surfacing");
-    startMovement(neutral - 20);
+    startMovement(neutral + 20);
 
     while(depth > 50){
       delay(100);
