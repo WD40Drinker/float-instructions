@@ -5,6 +5,9 @@
 SoftwareSerial Bluetooth(3,2);
 
 //when adjusting depth, make more boyant for incremement time and then make neutrally boyant
+//is depth negative or positive?
+//check neutral boyancy
+//check h-driver percentages needed
 
 struct Data {
 long time = -1;
@@ -51,7 +54,7 @@ void setup() {
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
   pinMode(ENB, OUTPUT);
-  digitalWrite(IN4,LOW);
+  digitalWrite(IN4,HIGH);
   analogWrite(ENB,255);
   delay(8000);
   stopMotor();
@@ -122,9 +125,16 @@ void loop() {
     startMovement(neutral - 20); // make the float sink by making it heavier
 
     while(toDepth > depth){ // IMPORTANT: CHECK THIS: WILL TYPES BE A PROBLEM?
-      delay(5000); //give the sensor time to update its depth 
+      delay(1000); // check depth every second 
+      depth = sensor.depth();
+      delay(1000);
+      depth = sensor.depth();
+      delay(1000);
+      depth = sensor.depth();
+      delay(1000);
+      depth = sensor.depth();
+      delay(1000);
       saveData();
-      //depth = sensor.depth();
     }
     //idk how to program adjustments when the float overshoots
     //This is the depth. Fuck you :)
@@ -135,8 +145,8 @@ void loop() {
     Bluetooth.write("float is surfacing");
     startMovement(neutral + 20);
 
-    while(depth > 50){
-      delay(100);
+    while(depth > 3){
+      delay(1000);
       depth = sensor.depth();
     }
 
@@ -171,6 +181,10 @@ void saveData() {
   Serial.println("Altitiude: ");
   Serial.println(collectedData[entry].altitude);
   entry++;
+}
+
+void updateDepth(){
+    depth = sensor.depth();
 }
 
 void dataDump(){
