@@ -145,7 +145,7 @@ void loop() {
     Bluetooth.write("float is surfacing");
     startMovement(neutral + 20);
 
-    while(depth > 3){
+    while(depth > 1){
       delay(1000);
       depth = sensor.depth();
     }
