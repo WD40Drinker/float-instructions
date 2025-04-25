@@ -5,6 +5,9 @@
 SoftwareSerial Bluetooth(3,2);
 
 //when adjusting depth, make more boyant for incremement time and then make neutrally boyant
+//is depth negative or positive?
+//check neutral boyancy
+//check h-driver percentages needed
 
 struct Data {
 long time = -1;
@@ -122,28 +125,33 @@ void loop() {
     startMovement(neutral - 20); // make the float sink by making it heavier
 
     while(toDepth > depth){ // IMPORTANT: CHECK THIS: WILL TYPES BE A PROBLEM?
-      delay(5000); //give the sensor time to update its depth 
+      delay(1000); // check depth every second 
+      depth = sensor.depth();
+      delay(1000);
+      depth = sensor.depth();
+      delay(1000);
+      depth = sensor.depth();
+      delay(1000);
+      depth = sensor.depth();
+      delay(1000);
       saveData();
-      //depth = sensor.depth();
     }
     //idk how to program adjustments when the float overshoots
     //This is the depth. Fuck you :)
-
-    //delay(5000); // lets pause just because
+    startMovement(neutral);
+    delay(1000);
 
     //make the float surface 
     Bluetooth.write("float is surfacing");
     startMovement(neutral + 20);
 
-    while(depth > 50){
-      delay(100);
+    while(depth > 3){
+      delay(1000);
       depth = sensor.depth();
     }
 
     //send the saved info
     Bluetooth.write("Dive completed successfully");
-
-    startMovement(neutral + 20);
     dataDump();
 
     forceMid();
@@ -175,11 +183,15 @@ void saveData() {
   entry++;
 }
 
+void updateDepth(){
+    depth = sensor.depth();
+}
+
 void dataDump(){
-  Bluetooth.write("time | temp | depth | pressure | altitiude");
+  Bluetooth.write("time (s) | temp | depth | pressure | altitiude");
   for(int i = 0; i < 50; i++){
     if(collectedData[i].time != -1){
-      Bluetooth.write(collectedData[i].time);
+      Bluetooth.write(collectedData[i].time/1000);
       Bluetooth.write(collectedData[i].temp);
       Bluetooth.write(collectedData[i].depth);
       Bluetooth.write(collectedData[i].pressure);
